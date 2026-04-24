@@ -1,0 +1,2789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legibility: interaction in AI interfaces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================
+   DESIGN TOKENS — essay mode
+   Serif body, restrained palette, minimal chrome
+   ===================================================== */
+:root {
+  --bg:        #FFFFFF;
+  --surface-1: #F7F7F8;
+  --surface-2: #EFEFF1;
+
+  --ink:       #0A0A0A;
+  --ink-2:     #4B4B4F;
+  --ink-3:     #A1A1A6;
+  --line:      #E6E6E8;
+
+  --blue:       #2563EB;  /* live / link */
+  --blue-soft:  #DBEAFE;
+  --blue-tint:  #93C5FD;
+  --green:      #10B981;  /* done */
+  --green-soft: #D1FAE5;
+  --coral:      #E11D48;  /* warn */
+  --coral-soft: #FEE2E2;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-pill: 999px;
+
+  --font-body:    'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page { max-width: 720px; margin: 0 auto; padding: 64px 28px 120px; }
+
+/* =====================================================
+   TYPOGRAPHY — essay, not editorial
+   ===================================================== */
+body {
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(32px, 4vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 14px;
+  color: var(--ink);
+  font-variation-settings: "opsz" 48;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 64px 0 14px;
+  color: var(--ink);
+  font-variation-settings: "opsz" 36;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  margin: 40px 0 10px;
+  color: var(--ink);
+}
+
+/* First paragraph after h1 gets a touch more presence */
+h1 + p {
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-bottom: 40px;
+}
+
+p { margin-bottom: 16px; }
+p strong { font-weight: 600; color: var(--ink); }
+em { font-style: italic; }
+
+a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+
+.byline {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--ink-3);
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 32px;
+}
+
+.lede {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 28px;
+}
+
+/* =====================================================
+   TOC — simple inline text links, not a nav bar
+   ===================================================== */
+.toc {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-bottom: 56px;
+  line-height: 1.8;
+}
+
+.toc-item {
+  color: var(--ink-2);
+  text-decoration: none;
+  margin-right: 14px;
+}
+
+.toc-item:hover { color: var(--blue); text-decoration: underline; }
+
+.toc-item .toc-num { display: none; }
+
+/* =====================================================
+   DEMO — essay mode: softer, less specimen card
+   ===================================================== */
+.demo {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 20px;
+  margin: 20px 0 6px;
+}
+
+.demo.hero {
+  padding: 28px 22px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  margin: 24px 0 8px;
+}
+
+.demo-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.demo-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.demo.hero .demo-title { font-size: 12px; }
+
+.tag {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-3);
+  transition: all 0.2s var(--ease);
+  white-space: nowrap;
+  border: 1px solid var(--line);
+}
+
+.tag[data-state="live"]    { background: var(--blue-soft);  color: var(--blue);  border-color: transparent; }
+.tag[data-state="done"]    { background: var(--green-soft); color: var(--green); border-color: transparent; }
+.tag[data-state="warn"]    { background: var(--coral-soft); color: var(--coral); border-color: transparent; }
+.tag[data-state="neutral"] { background: transparent; color: var(--ink-3); }
+
+.cap {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 8px 2px 28px;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* =====================================================
+   CHAT
+   ===================================================== */
+.chat {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 80px;
+}
+.demo.hero .chat { background: var(--bg); }
+
+.chat-user, .chat-ai {
+  position: relative;
+  padding-left: 52px;
+}
+
+.chat-user {
+  color: var(--ink-2);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.chat-ai { color: var(--ink); min-height: 36px; }
+
+.chat-user::before, .chat-ai::before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  line-height: 1.2;
+}
+
+.chat-user::before { content: "You"; background: var(--surface-2); color: var(--ink-2); }
+.chat-ai::before   { content: "AI";  background: var(--blue);      color: white; }
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+.btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--r-pill);
+  transition: all 0.15s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover  { background: var(--ink-2); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn-secondary:hover { background: var(--surface-2); border-color: var(--ink); }
+
+.btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+/* =====================================================
+   SPINNER (hero)
+   ===================================================== */
+.spinner-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 32px 16px;
+}
+
+.spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--surface-2);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-timer {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.spinner-timer strong { color: var(--coral); font-weight: 500; }
+
+/* =====================================================
+   TYPING DOTS
+   ===================================================== */
+.typing-dots { display: inline-flex; gap: 5px; padding: 8px 0; }
+
+.typing-dots span {
+  width: 7px; height: 7px;
+  background: var(--ink-3);
+  border-radius: 50%;
+  animation: dot-bounce 1.2s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+
+.annotate {
+  font-size: 12px;
+  color: var(--coral);
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--coral-soft);
+  border-radius: var(--r-sm);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.4s var(--ease);
+}
+
+.annotate.show { opacity: 1; transform: translateY(0); }
+
+/* =====================================================
+   STREAMING CURSOR
+   ===================================================== */
+.cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--blue);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+/* =====================================================
+   REASONING
+   ===================================================== */
+.reasoning {
+  background: var(--blue-soft);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: var(--r-sm);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.3s var(--ease);
+}
+
+.reasoning-header {
+  padding: 9px 12px;
+  cursor: pointer;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.reasoning-header:hover { background: rgba(37, 99, 235, 0.08); }
+.reasoning-header .chevron { transition: transform 0.2s var(--ease); font-size: 10px; }
+.reasoning.open .chevron { transform: rotate(90deg); }
+
+.reasoning-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s var(--ease);
+  padding: 0 12px;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.reasoning.open .reasoning-body { max-height: 320px; padding: 4px 12px 14px; }
+
+/* =====================================================
+   PLAN
+   ===================================================== */
+.plan {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 4px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.plan-step {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  transition: all 0.3s var(--ease);
+}
+
+.plan-step:last-child { border-bottom: none; }
+
+.plan-step .step-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s var(--ease);
+}
+
+.plan-step.done .step-num    { background: var(--green); border-color: var(--green); color: white; }
+.plan-step.running .step-num {
+  background: var(--blue); border-color: var(--blue); color: white;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.75; transform: scale(1.1); }
+}
+
+.plan-step .step-text { flex: 1; color: var(--ink); line-height: 1.4; }
+.plan-step.done .step-text { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--line); }
+
+.plan-step .step-status {
+  font-size: 10px; font-weight: 500; color: var(--ink-3);
+  padding: 3px 8px; border-radius: var(--r-pill); background: var(--surface-2);
+}
+
+.plan-step.done .step-status    { color: var(--green); background: var(--green-soft); }
+.plan-step.running .step-status { color: var(--blue);  background: var(--blue-soft); }
+
+.plan-intro { color: var(--ink-2); font-size: 13px; margin-bottom: 12px; }
+
+/* =====================================================
+   MULTI-SHOT RENDER
+   ===================================================== */
+.shots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.shot {
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  background: var(--surface-2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px;
+}
+
+.shot-label {
+  position: absolute;
+  top: 8px; left: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.shot.running {
+  background: linear-gradient(90deg, var(--surface-2), var(--blue-soft), var(--surface-2));
+  background-size: 200% 100%;
+  animation: shot-shimmer 1.4s linear infinite;
+}
+.shot.running .shot-label { color: var(--blue); }
+
+@keyframes shot-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shot.done {
+  background: linear-gradient(135deg,
+    hsl(calc(var(--h)), 70%, 75%) 0%,
+    hsl(calc(var(--h) + 40), 70%, 65%) 100%);
+}
+.shot:nth-child(1) { --h: 210; }
+.shot:nth-child(2) { --h: 30;  }
+.shot:nth-child(3) { --h: 280; }
+.shot:nth-child(4) { --h: 140; }
+
+.shot.done .shot-label { color: rgba(255,255,255,0.9); }
+
+.shot-progress {
+  width: 100%; height: 3px;
+  background: rgba(0,0,0,0.1);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  position: relative; z-index: 1;
+}
+
+.shot-progress-bar {
+  height: 100%; width: 0;
+  background: var(--blue);
+  transition: width 0.3s linear;
+}
+
+.shot.done .shot-progress-bar { background: white; width: 100% !important; }
+
+/* =====================================================
+   AMBIENT ROW
+   ===================================================== */
+.ambient-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ambient-card {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 22px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  min-height: 120px; justify-content: center;
+}
+
+.ambient-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.amb-pulse {
+  width: 14px; height: 14px;
+  background: var(--ink); border-radius: 50%;
+  animation: amb-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes amb-pulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%      { transform: scale(0.6); opacity: 0.6; }
+}
+
+.amb-shimmer {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  background: linear-gradient(90deg, #D4D4D4 0%, #D4D4D4 40%, var(--ink) 50%, #D4D4D4 60%, #D4D4D4 100%);
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shim 2.4s linear infinite;
+}
+
+@keyframes shim {
+  0%   { background-position: 250% 0; }
+  100% { background-position: -50% 0; }
+}
+
+.amb-orb {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #A78BFA, #2563EB 80%);
+  animation: orb 2.2s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(37,99,235,0.35);
+}
+
+@keyframes orb {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+/* =====================================================
+   MATRIX
+   ===================================================== */
+.matrix {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin: 28px 0 14px;
+  display: grid;
+  grid-template-columns: 170px repeat(4, 1fr);
+}
+
+.matrix-cell {
+  padding: 14px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.matrix-cell:nth-child(5n) { border-right: none; }
+.matrix > .matrix-cell:nth-last-child(-n+5) { border-bottom: none; }
+
+.matrix-header {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: var(--surface-1);
+}
+
+.matrix-row-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--surface-1);
+  line-height: 1.3;
+}
+
+.matrix-row-label small {
+  display: block;
+  font-weight: 400;
+  color: var(--ink-3);
+  font-size: 11px;
+  margin-top: 3px;
+  font-family: var(--font-body);
+}
+
+@media (max-width: 720px) {
+  .matrix { grid-template-columns: 110px repeat(4, 1fr); }
+  .matrix-cell { padding: 10px 8px; font-size: 11px; }
+  .matrix-row-label { font-size: 12px; }
+  .matrix-row-label small { font-size: 10px; }
+}
+
+/* =====================================================
+   RECEIPT (NEW)
+   ===================================================== */
+.receipt {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 20px;
+}
+
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.receipt-status {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.receipt-status::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  background: var(--green);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.receipt-time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.receipt-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.receipt-link:hover { text-decoration: underline; }
+
+@media (max-width: 520px) {
+  .receipt-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =====================================================
+   AUTONOMY SPECTRUM
+   ===================================================== */
+.spectrum {
+  margin: 20px 0 24px;
+  padding: 20px;
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+}
+
+.spectrum-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 18px;
+}
+
+.spectrum-track {
+  position: relative;
+  height: 2px;
+  background: var(--line);
+  margin: 32px 16px 48px;
+}
+
+.spectrum-track::before,
+.spectrum-track::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.spectrum-track::before { left: -4px; }
+.spectrum-track::after  { right: -4px; }
+
+.spectrum-point {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  text-align: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.spectrum-point .dot {
+  width: 14px; height: 14px;
+  background: var(--ink-3);
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--ink-3);
+  margin: 0 auto;
+  transition: all 0.2s var(--ease);
+}
+
+.spectrum-point:hover .dot { transform: scale(1.15); }
+
+.spectrum-point.active .dot {
+  background: var(--blue);
+  box-shadow: 0 0 0 1px var(--blue);
+  transform: scale(1.15);
+}
+
+.spectrum-point .label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  margin-top: 8px;
+  white-space: nowrap;
+  color: var(--ink-2);
+  transition: color 0.2s var(--ease);
+}
+
+.spectrum-point.active .label { color: var(--ink); }
+
+.spectrum-point .sub {
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.spectrum-extremes {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spectrum-detail {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.spectrum-weights {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.15;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.weight-label small {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.weight-bar {
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.weight-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: var(--r-pill);
+  width: 0;
+  transition: width 0.5s var(--ease);
+}
+
+.spectrum-description {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+@media (max-width: 520px) {
+  .spectrum-point .label { font-size: 11px; }
+  .spectrum-point .sub { font-size: 9px; }
+}
+
+/* =====================================================
+   LOG STREAM
+   ===================================================== */
+.log-stream {
+  background: #0F0F14;
+  color: #E4E4E7;
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  height: 220px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.log-line {
+  display: flex;
+  gap: 10px;
+  padding: 1px 0;
+  opacity: 0;
+  animation: log-enter 0.2s ease-out forwards;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@keyframes log-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.log-time {
+  color: #71717A;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-level {
+  font-weight: 600;
+  width: 46px;
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 3px;
+  text-align: center;
+  font-size: 10px;
+  height: 16px;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+}
+
+.log-level[data-level="INFO"]  { color: #60A5FA; background: rgba(96, 165, 250, 0.15); }
+.log-level[data-level="WARN"]  { color: #FBBF24; background: rgba(251, 191, 36, 0.15); }
+.log-level[data-level="ERROR"] { color: #F87171; background: rgba(244, 63, 94, 0.2); }
+
+.log-service { color: #A78BFA; flex-shrink: 0; }
+.log-msg {
+  color: #D4D4D8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* =====================================================
+   TOPOLOGY
+   ===================================================== */
+.topology {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 18px;
+}
+
+.topology svg {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  display: block;
+}
+
+.topology .node rect {
+  fill: var(--bg);
+  stroke: var(--line);
+  stroke-width: 1.5;
+  transition: all 0.3s var(--ease);
+}
+
+.topology .node text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 11px;
+  fill: var(--ink);
+}
+
+.topology .node-degraded rect {
+  stroke: var(--coral);
+  stroke-width: 2;
+  animation: node-warn 1.6s ease-in-out infinite;
+}
+
+.topology .node-degraded text { fill: var(--coral); }
+
+@keyframes node-warn {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(244, 63, 94, 0)); }
+  50%      { filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.5)); }
+}
+
+.topology .edge {
+  stroke: var(--line);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.topology .edge-slow { stroke: rgba(244, 63, 94, 0.35); stroke-width: 2; }
+
+.topology .particle {
+  fill: var(--blue);
+}
+
+.topology .particle-slow { fill: var(--coral); }
+
+.topology-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+
+.topology-legend-item { display: flex; align-items: center; gap: 6px; }
+.topology-legend-item .sw { width: 10px; height: 10px; border-radius: 2px; }
+
+/* =====================================================
+   LIVE CHART (time-series) — NEW
+   ===================================================== */
+.chart-wrap {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 20px;
+  position: relative;
+}
+
+.chart-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.chart-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.chart-label {
+  font-size: 11px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.chart-delta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+}
+
+.chart-delta[data-dir="up"]   { background: var(--green-soft); color: var(--green); }
+.chart-delta[data-dir="down"] { background: var(--coral-soft); color: var(--coral); }
+.chart-delta[data-dir="flat"] { background: var(--surface-2);  color: var(--ink-2); }
+
+.chart-canvas {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart-canvas svg { width: 100%; height: 100%; display: block; }
+
+.chart-grid-line { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2, 4; }
+.chart-line      { stroke: var(--blue); stroke-width: 2; fill: none; }
+.chart-fill      { fill: url(#chart-grad); }
+.chart-dot       { fill: var(--blue); }
+
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-top: 8px;
+}
+
+/* =====================================================
+   FLAME GRAPH (trace waterfall) — NEW
+   ===================================================== */
+.flame {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.flame-rows { position: relative; }
+
+.flame-row {
+  position: relative;
+  height: 26px;
+  margin-bottom: 4px;
+}
+
+.flame-span {
+  position: absolute;
+  top: 0;
+  height: 22px;
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: all 0.4s var(--ease);
+}
+
+.flame-span.revealed {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.flame-span[data-type="agent"] { background: var(--ink); }
+.flame-span[data-type="llm"]   { background: var(--blue); }
+.flame-span[data-type="tool"]  { background: var(--blue-tint); color: var(--ink); }
+.flame-span[data-type="db"]    { background: var(--green); }
+.flame-span[data-type="slow"]  { background: var(--coral); }
+
+.flame-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: 10px;
+}
+
+.flame-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 11px;
+  font-family: var(--font-body);
+  color: var(--ink-2);
+}
+
+.flame-legend-item { display: flex; align-items: center; gap: 6px; }
+.flame-legend-item .sw { width: 10px; height: 10px; border-radius: 2px; }
+
+/* =====================================================
+   TRAINING CURVE — NEW
+   ===================================================== */
+.curve-wrap {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+  padding: 20px;
+}
+
+.curve-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.curve-stats {
+  display: flex;
+  gap: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.curve-stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.curve-stat-label {
+  color: var(--ink-3);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.curve-stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.curve-canvas { width: 100%; height: 180px; }
+.curve-canvas svg { width: 100%; height: 100%; }
+
+.curve-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+
+.curve-legend-item { display: flex; align-items: center; gap: 6px; }
+.curve-legend-item .sw { width: 14px; height: 2px; }
+
+.curve-line-train { stroke: var(--blue);  stroke-width: 2; fill: none; }
+.curve-line-val   { stroke: var(--coral); stroke-width: 2; fill: none; opacity: 0.8; }
+.curve-grid       { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2, 4; }
+.curve-axis-text  { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-3); }
+
+/* =====================================================
+   ANTI-PATTERN — understated marginal note
+   ===================================================== */
+.antipattern {
+  border-left: 2px solid var(--coral);
+  padding: 4px 0 4px 16px;
+  margin: 20px 0;
+  display: block;
+}
+
+.antipattern-icon { display: none; }
+
+.antipattern-body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.antipattern-body strong {
+  color: var(--coral);
+  font-weight: 600;
+  font-style: normal;
+  display: inline;
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+/* =====================================================
+   KICKER — a pull quote, not a box
+   ===================================================== */
+.kicker {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  padding: 8px 0 8px 24px;
+  margin: 40px 0;
+  border-left: 2px solid var(--ink);
+  background: transparent;
+  font-variation-settings: "opsz" 24;
+}
+
+.kicker em {
+  background: transparent;
+  padding: 0;
+  font-style: italic;
+  color: var(--ink);
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 600px) {
+  body { font-size: 15px; }
+  .page { padding: 44px 20px 80px; }
+  .demo { padding: 16px; }
+  .demo.hero { padding: 26px 18px; }
+  .lede { font-size: 17px; }
+  .kicker { font-size: 20px; padding: 26px 22px; }
+  h2 { font-size: 25px; }
+  h3 { font-size: 17px; }
+  .chat-user, .chat-ai { padding-left: 0; padding-top: 26px; }
+  .chat-user::before, .chat-ai::before { top: 0; }
+  .shots { grid-template-columns: repeat(2, 1fr); }
+  .ambient-row { grid-template-columns: 1fr; }
+}
+/* =====================================================
+   TITLE SPECIMEN — a tiny cycling demo next to h1
+   that itself illustrates the essay's thesis
+   ===================================================== */
+.title-block {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.title-block h1 {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.title-specimen {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  user-select: none;
+}
+
+.title-specimen-stage {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  position: relative;
+}
+
+/* Stage variants */
+.ts-spinner {
+  width: 22px; height: 22px;
+  border: 2.5px solid var(--surface-2);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+.ts-dots { display: inline-flex; gap: 4px; }
+.ts-dots span {
+  width: 6px; height: 6px;
+  background: var(--ink-3);
+  border-radius: 50%;
+  animation: dot-bounce 1.2s infinite ease-in-out;
+}
+.ts-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ts-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+.ts-bar {
+  width: 34px;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.ts-bar-fill {
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+  border-radius: var(--r-pill);
+  animation: ts-bar-fill 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes ts-bar-fill {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+
+.ts-pulse {
+  width: 12px; height: 12px;
+  background: var(--ink);
+  border-radius: 50%;
+  animation: amb-pulse 1.2s ease-in-out infinite;
+}
+
+@media (max-width: 520px) {
+  .title-block { gap: 16px; }
+  .title-specimen { width: 42px; }
+  .title-specimen-stage { width: 42px; height: 42px; }
+}
+</style>
+</head>
+<body>
+
+<article class="page">
+
+  <div class="title-block">
+    <div class="title-specimen" aria-hidden="true">
+      <div class="title-specimen-stage" id="ts-stage"></div>
+    </div>
+
+    <h1>Legibility: interaction in AI interfaces</h1>
+  </div>
+
+  <p class="lede">As software moves from deterministic execution to probabilistic processes, motion becomes the primary mechanism for making work visible.</p>
+
+  <h2>Introduction</h2>
+
+  <p>Most interface patterns assume a particular kind of system.</p>
+
+  <p>One where operations are fast, bounded, and deterministic. Work begins, progresses, and completes in a predictable way. Under these conditions, interfaces can afford to abstract the process. A small set of signals — loading, success, failure — is sufficient to describe what is happening.</p>
+
+  <p>The user does not need to understand the work. Only that it will complete.</p>
+
+  <p>AI systems do not conform to these assumptions.</p>
+
+  <p>Their latency is variable, their execution is non-deterministic, and their behavior unfolds over time. A response may involve multiple stages — retrieval, generation, tool use — whose duration and outcome are not known in advance. The system is not simply &ldquo;working&rdquo; or &ldquo;done.&rdquo; It is progressing, revising, and sometimes failing in ways that are observable if surfaced.</p>
+
+  <p>Under these conditions, abstraction breaks down.</p>
+
+  <p>Interfaces can no longer summarize system behavior into a single state without losing essential information. Users need to understand not just that work is happening, but what kind of work is happening — whether a system is actively progressing, stalled, or producing partial results.</p>
+
+  <p>This creates a new requirement: interfaces must represent ongoing computation, not just signal its existence.</p>
+
+  <p>The spinner is a canonical example of the previous model. It indicates that a process has started without describing the process itself. For systems where execution is short and predictable, this is sufficient.</p>
+
+  <p>For AI systems, it is not.</p>
+
+  <h2>The spinner</h2>
+
+  <p>A spinner communicates liveness without structure. It indicates that a process has started, but provides no information about its state, progress, or expected duration.</p>
+
+  <p>For short operations, this is acceptable. The interaction completes before the absence of information becomes meaningful.</p>
+
+    <div class="demo hero">
+      <div class="demo-head">
+        <div class="demo-title">A spinner</div>
+        <span class="tag" data-state="warn">Still spinning</span>
+      </div>
+      <div class="spinner-hero">
+        <div class="spinner"></div>
+        <div class="spinner-timer">Running for <strong id="spinner-timer">0s</strong> since you loaded this page</div>
+      </div>
+    </div>
+
+  <p>As latency increases, the limitation becomes structural. The spinner does not distinguish between active computation, retry loops, or failure states. It continues to signal progress even when none is occurring.</p>
+
+  <p>The issue is not visual design. The issue is the model of work it represents: fast, linear, and opaque.</p>
+
+  <h2>The typing indicator</h2>
+
+  <p>The first adaptation was to borrow from human messaging: the typing indicator.</p>
+
+  <p>This pattern implies continuous, real-time composition. In messaging systems, that implication is accurate. In AI systems, it is often not.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Typing dots</div>
+        <span class="tag" data-state="neutral" id="tag-02">Idle</span>
+      </div>
+      <div class="chat">
+        <div class="chat-user">What's the capital of Bolivia?</div>
+        <div class="chat-ai" id="chat-02"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="runTyping()">Ask</button>
+      </div>
+      <div class="annotate" id="annotate-02">Nothing was typed. The text was ready the whole time.</div>
+    </div>
+
+  <p>In many implementations, the indicator runs during network latency or preprocessing, while the response is generated off-screen and delivered in full. The motion implies continuity; the system behaves discretely.</p>
+
+  <p>Users detect this mismatch quickly. When the entire response appears at once, the indicator is revealed as performance rather than representation.</p>
+
+  <p>Patterns that misrepresent the underlying process do not survive.</p>
+
+  <h2>Representing work over time</h2>
+
+  <p>AI interfaces have converged on a small set of strategies for representing computation as it unfolds. These are not stylistic variations. They are distinct ways of mapping temporal processes into visible form.</p>
+
+  <div class="matrix">
+    <div class="matrix-cell matrix-header"></div>
+    <div class="matrix-cell matrix-header">Chat</div>
+    <div class="matrix-cell matrix-header">Image</div>
+    <div class="matrix-cell matrix-header">Video</div>
+    <div class="matrix-cell matrix-header">Code</div>
+
+    <div class="matrix-cell matrix-row-label">Reveal-as-artifact<small>the output is the progress</small></div>
+    <div class="matrix-cell">Token streaming</div>
+    <div class="matrix-cell">Progressive denoising</div>
+    <div class="matrix-cell">Frame-by-frame render</div>
+    <div class="matrix-cell">Ghost text completion</div>
+
+    <div class="matrix-cell matrix-row-label">Progress-as-steps<small>staged, sequential</small></div>
+    <div class="matrix-cell">Agent plan</div>
+    <div class="matrix-cell">Queue → sample → upscale</div>
+    <div class="matrix-cell">Shot 1 of 4, 2 of 4…</div>
+    <div class="matrix-cell">File-by-file edits</div>
+
+    <div class="matrix-cell matrix-row-label">Show-the-work<small>intermediate computation</small></div>
+    <div class="matrix-cell">Reasoning trace</div>
+    <div class="matrix-cell">Prompt rewrite</div>
+    <div class="matrix-cell">Storyboard breakdown</div>
+    <div class="matrix-cell">Tool-call log</div>
+
+    <div class="matrix-cell matrix-row-label">Ambient presence<small>only liveness</small></div>
+    <div class="matrix-cell">Shimmering "thinking…"</div>
+    <div class="matrix-cell">Pulse while generating</div>
+    <div class="matrix-cell">Render breathing indicator</div>
+    <div class="matrix-cell">Voice orb, IDE pulse</div>
+  </div>
+
+  <h3>1. Reveal-as-artifact</h3>
+
+  <p>The output is the progress.</p>
+
+  <p>There is no loading state. The artifact — text, image, or code — appears in incomplete form and resolves over time.</p>
+
+  <p>In language models, this takes the form of token streaming. Text is generated sequentially, with variable latency between tokens. The interface exposes that process directly.</p>
+
+    <div class="demo hero">
+      <div class="demo-head">
+        <div class="demo-title">Token streaming</div>
+        <span class="tag" data-state="neutral" id="tag-03">Idle</span>
+      </div>
+      <div class="chat">
+        <div class="chat-user">Explain why streaming tokens helps users trust AI.</div>
+        <div class="chat-ai" id="chat-03"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-03-start" onclick="runStreaming()">Ask</button>
+        <button class="btn btn-secondary" id="btn-03-stop" onclick="stopStreaming()" disabled>Stop</button>
+      </div>
+    </div>
+
+  <p>This representation is effective because it is faithful. Users observe pacing, hesitation, and acceleration as they occur.</p>
+
+  <p>The same pattern appears across modalities:</p>
+
+  <ul>
+    <li>Image generation through progressive denoising</li>
+    <li>Video generation through incremental rendering</li>
+    <li>Code generation through inline ghost text</li>
+  </ul>
+
+  <p>In each case, progress is identical to the artifact under construction.</p>
+
+  <p>The pattern fails when this relationship is broken. Buffered output — released all at once after a delay — simulates progress without representing it.</p>
+
+  <h3>2. Progress-as-steps</h3>
+
+  <p>Work is staged into discrete phases.</p>
+
+  <p>When processes have identifiable structure, interfaces expose it:</p>
+
+  <ul>
+    <li>Queue &rarr; sample &rarr; upscale</li>
+    <li>Shot-by-shot video rendering</li>
+    <li>File-by-file code edits</li>
+  </ul>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Video render, shot by shot</div>
+        <span class="tag" data-state="neutral" id="tag-04">Queued</span>
+      </div>
+      <div class="shots" id="shots-04">
+        <div class="shot" data-i="0"><div class="shot-label">Shot 1</div><div class="shot-progress"><div class="shot-progress-bar"></div></div></div>
+        <div class="shot" data-i="1"><div class="shot-label">Shot 2</div><div class="shot-progress"><div class="shot-progress-bar"></div></div></div>
+        <div class="shot" data-i="2"><div class="shot-label">Shot 3</div><div class="shot-progress"><div class="shot-progress-bar"></div></div></div>
+        <div class="shot" data-i="3"><div class="shot-label">Shot 4</div><div class="shot-progress"><div class="shot-progress-bar"></div></div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-04-run" onclick="runShots()">Render</button>
+        <button class="btn btn-secondary" onclick="resetShots()">Reset</button>
+      </div>
+    </div>
+
+  <p>This allows users to localize delay. It answers not just whether the system is slow, but where it is slow.</p>
+
+  <p>The pattern depends on structural accuracy. If the stages shown do not correspond to actual execution, the interface becomes misleading.</p>
+
+  <p>Linear progress bars are a common failure. They imply steady advancement even when the underlying process is uneven or stalled.</p>
+
+  <p>In these cases, the interface does not represent progress — it performs it.</p>
+
+  <h3>3. Show-the-work</h3>
+
+  <p>Intermediate computation is exposed.</p>
+
+  <p>Rather than summarizing a process, the interface reveals its internal steps:</p>
+
+  <ul>
+    <li>Tool-call logs</li>
+    <li>Retrieval steps</li>
+    <li>Prompt transformations</li>
+    <li>Reasoning traces</li>
+  </ul>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Reasoning, then answer</div>
+        <span class="tag" data-state="neutral" id="tag-05">Idle</span>
+      </div>
+      <div class="chat">
+        <div class="chat-user">Is it cheaper to boil water in a kettle or a microwave?</div>
+        <div class="chat-ai" id="chat-05">
+          <div class="reasoning" id="reasoning-05" style="display:none;" onclick="toggleReasoning()">
+            <div class="reasoning-header">
+              <span id="reasoning-label-05">Thinking…</span>
+              <span class="chevron">▸</span>
+            </div>
+            <div class="reasoning-body" id="reasoning-body-05"></div>
+          </div>
+          <div id="answer-05"></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="runReasoning()">Ask</button>
+      </div>
+    </div>
+
+  <p>This pattern addresses a different question than progress indicators. It does not answer &ldquo;how far along is the system?&rdquo; but &ldquo;what is the system doing?&rdquo;</p>
+
+  <p>Its primary function is inspectability. Users can compare intermediate steps against final outputs and identify inconsistencies.</p>
+
+  <p>In practice, this information is often collapsed by default. What matters is not constant visibility, but availability.</p>
+
+  <p>The pattern fails when exposure is selective. If only coherent or successful steps are shown, the interface presents a reconstructed narrative rather than the actual process.</p>
+
+  <h3>4. Ambient presence</h3>
+
+  <p>Only liveness is communicated.</p>
+
+  <p>When no meaningful intermediate state can be exposed, interfaces fall back to minimal signals:</p>
+
+  <ul>
+    <li>Pulses</li>
+    <li>Shimmers</li>
+    <li>Breathing indicators</li>
+  </ul>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Three ambient patterns</div>
+        <span class="tag" data-state="live">Always running</span>
+      </div>
+      <div class="ambient-row">
+        <div class="ambient-card">
+          <div class="amb-pulse"></div>
+          <div class="ambient-label">Pulse — ChatGPT</div>
+        </div>
+        <div class="ambient-card">
+          <div class="amb-shimmer">Thinking…</div>
+          <div class="ambient-label">Shimmer — Claude</div>
+        </div>
+        <div class="ambient-card">
+          <div class="amb-orb"></div>
+          <div class="ambient-label">Orb — voice mode</div>
+        </div>
+      </div>
+    </div>
+
+  <p>These communicate that the system is active without making claims about what it is doing.</p>
+
+  <p>This is appropriate when no structured progress exists.</p>
+
+  <p>It fails when used for extended durations. At that point, ambient motion collapses back into the spinner&rsquo;s limitation: presence without explanation.</p>
+
+  <h2>Agents</h2>
+
+  <p>These patterns become more consequential in agent systems.</p>
+
+  <p>A chat interface produces an answer. An agent executes actions.</p>
+
+  <p>The difference is operational. Errors in chat systems produce incorrect outputs. Errors in agent systems produce external effects: sent messages, modified files, executed transactions.</p>
+
+  <p>This raises the requirement for legibility.</p>
+
+  <p>Agent interfaces must represent three distinct temporal views of the same process:</p>
+
+  <ul>
+    <li><strong>Plan</strong> — what the system intends to do</li>
+    <li><strong>Trace</strong> — what the system is doing</li>
+    <li><strong>Receipt</strong> — what the system has done</li>
+  </ul>
+
+  <p>These correspond to three fundamental functions: planning, monitoring, and auditing.</p>
+
+  <h3>The plan</h3>
+
+  <p>A structured description of intended actions presented before execution.</p>
+
+  <p>Users can approve, modify, or reject it. Once execution begins, the plan becomes a reference against which progress is measured.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Plan-first approval</div>
+        <span class="tag" data-state="neutral" id="tag-06">Awaiting approval</span>
+      </div>
+      <div class="chat">
+        <div class="chat-user">Schedule a 30-min coffee with Alex next week.</div>
+        <div class="chat-ai">
+          <div class="plan-intro">Here's what I'll do:</div>
+          <div class="plan" id="plan-06">
+            <div class="plan-step"><div class="step-num">1</div><div class="step-text">Check your calendar for free 30-min slots next week</div><div class="step-status">pending</div></div>
+            <div class="plan-step"><div class="step-num">2</div><div class="step-text">Check Alex's shared availability</div><div class="step-status">pending</div></div>
+            <div class="plan-step"><div class="step-num">3</div><div class="step-text">Draft invite — "Coffee catch-up" — Blue Bottle location</div><div class="step-status">pending</div></div>
+            <div class="plan-step"><div class="step-num">4</div><div class="step-text">Send to alex@example.com</div><div class="step-status">pending</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-06-approve" onclick="approvePlan()">Approve &amp; run</button>
+        <button class="btn btn-secondary" onclick="resetPlan()">Reset</button>
+      </div>
+    </div>
+
+  <p>The plan externalizes intent. It allows intervention before irreversible actions occur.</p>
+
+  <h3>The trace</h3>
+
+  <p>A real-time record of execution.</p>
+
+  <p>Tool calls, retrieval steps, and intermediate results appear as they occur. Each event provides a discrete confirmation of progress.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Agent tool-call trace</div>
+        <span class="tag" data-state="neutral" id="tag-07">Idle</span>
+      </div>
+      <div class="trace" id="trace-07">
+        <div style="color: var(--ink-3); font-style: italic; font-size: 12px;">Click run to see the agent work.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-07-run" onclick="runTrace()">Run: "Find highly-rated Thai in Queens"</button>
+      </div>
+    </div>
+
+  <p>The trace transforms a single uncertain wait into a sequence of observable operations.</p>
+
+  <h3>The receipt</h3>
+
+  <p>A retrospective summary of execution.</p>
+
+  <p>It includes actions taken, duration, resources consumed, and artifacts modified.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Run receipt</div>
+        <span class="tag" data-state="neutral" id="tag-08">Not run yet</span>
+      </div>
+      <div class="receipt">
+        <div class="receipt-header">
+          <span class="receipt-status">Complete</span>
+          <span class="receipt-time" id="receipt-time">—</span>
+        </div>
+        <div class="receipt-stats">
+          <div class="stat">
+            <div class="stat-label">Tool calls</div>
+            <div class="stat-value" id="stat-calls" data-target="23">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Tokens</div>
+            <div class="stat-value" id="stat-tokens" data-target="4821">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Files changed</div>
+            <div class="stat-value" id="stat-files" data-target="3">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Cost</div>
+            <div class="stat-value" id="stat-cost" data-target="0.08" data-prefix="$">$0.00</div>
+          </div>
+        </div>
+        <div class="receipt-actions">
+          <a href="#" class="receipt-link" onclick="event.preventDefault()">View full trace →</a>
+          <span style="color: var(--ink-3);">·</span>
+          <a href="#" class="receipt-link" onclick="event.preventDefault()">Diff of changes</a>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-08-run" onclick="runReceipt()">Show run summary</button>
+      </div>
+    </div>
+
+  <p>For autonomous systems, the receipt is often the only point of inspection. It enables verification and trust calibration.</p>
+
+  <p>Systems that omit this layer remove the ability to audit. As autonomy increases, this omission becomes more consequential.</p>
+
+  <h2>Observability</h2>
+
+  <p>These patterns are not new. They originate in observability systems.</p>
+
+  <p>Observability tools were designed to make distributed, unreliable processes understandable in real time. They rely on a set of primitives:</p>
+
+  <ul>
+    <li>Metrics</li>
+    <li>Logs</li>
+    <li>Traces</li>
+    <li>Topology</li>
+    <li>Experiments</li>
+  </ul>
+
+  <p>Each represents system behavior over time.</p>
+
+  <p>Live metrics make trends visible. Log streams expose event sequences. Traces reveal structured execution paths. Topology maps show relationships between components.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Live throughput</div>
+        <span class="tag" data-state="live" id="tag-09">Streaming</span>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-meta">
+          <div>
+            <div class="chart-label">Tokens / sec</div>
+            <div class="chart-value" id="chart-value">0</div>
+          </div>
+          <div class="chart-delta" data-dir="flat" id="chart-delta">— vs 5m ago</div>
+        </div>
+        <div class="chart-canvas">
+          <svg viewBox="0 0 400 140" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563EB" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line class="chart-grid-line" x1="0" y1="35"  x2="400" y2="35"/>
+            <line class="chart-grid-line" x1="0" y1="70"  x2="400" y2="70"/>
+            <line class="chart-grid-line" x1="0" y1="105" x2="400" y2="105"/>
+            <path class="chart-fill" id="chart-fill" d=""/>
+            <path class="chart-line" id="chart-line" d=""/>
+            <circle class="chart-dot" id="chart-dot" cx="0" cy="0" r="3"/>
+          </svg>
+        </div>
+        <div class="chart-footer">
+          <span>−60s</span>
+          <span>now</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">LLM service logs, tailing</div>
+        <span class="tag" data-state="live">Streaming</span>
+      </div>
+      <div class="log-stream" id="log-stream"></div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Agent trace — flame graph</div>
+        <span class="tag" data-state="neutral" id="tag-10">Idle</span>
+      </div>
+      <div class="flame">
+        <div class="flame-rows" id="flame-rows-10">
+          <div class="flame-row"><div class="flame-span" data-type="agent" style="left: 0%; width: 100%;">agent.run &nbsp;·&nbsp; 2.8s</div></div>
+          <div class="flame-row">
+            <div class="flame-span" data-type="llm"  style="left: 0%;  width: 16%;">llm.plan · 450ms</div>
+            <div class="flame-span" data-type="agent" style="left: 17%; width: 83%;">execute · 2.3s</div>
+          </div>
+          <div class="flame-row">
+            <div class="flame-span" data-type="tool" style="left: 17%; width: 18%;">tool.search · 500ms</div>
+            <div class="flame-span" data-type="slow" style="left: 36%; width: 42%;">tool.fetch · 1.2s</div>
+            <div class="flame-span" data-type="llm"  style="left: 79%; width: 21%;">llm.respond · 580ms</div>
+          </div>
+          <div class="flame-row">
+            <div class="flame-span" data-type="db" style="left: 17%;  width: 10%;">db.query · 280ms</div>
+            <div class="flame-span" data-type="db" style="left: 36%;  width: 8%;">db.query · 220ms</div>
+            <div class="flame-span" data-type="db" style="left: 46%;  width: 15%;">api.call · 420ms</div>
+            <div class="flame-span" data-type="db" style="left: 62%;  width: 16%;">parse.json · 450ms</div>
+          </div>
+        </div>
+        <div class="flame-axis">
+          <span>0ms</span>
+          <span>1.4s</span>
+          <span>2.8s</span>
+        </div>
+        <div class="flame-legend">
+          <div class="flame-legend-item"><span class="sw" style="background: var(--ink);"></span>Agent</div>
+          <div class="flame-legend-item"><span class="sw" style="background: var(--blue);"></span>LLM</div>
+          <div class="flame-legend-item"><span class="sw" style="background: var(--blue-tint);"></span>Tool</div>
+          <div class="flame-legend-item"><span class="sw" style="background: var(--green);"></span>DB / API</div>
+          <div class="flame-legend-item"><span class="sw" style="background: var(--coral);"></span>Slow (&gt; 1s)</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-10-run" onclick="runFlame()">Replay trace</button>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Agent system topology</div>
+        <span class="tag" data-state="live">Live traffic</span>
+      </div>
+      <div class="topology">
+        <svg viewBox="0 0 560 260" preserveAspectRatio="xMidYMid meet">
+          <!-- Edges (drawn first so nodes sit on top) -->
+          <g class="topology-edges">
+            <path class="edge" d="M 120,130 C 160,130 180,130 220,130" id="e1"/>
+            <path class="edge" d="M 320,130 C 360,130 370,70 400,70"   id="e2"/>
+            <path class="edge" d="M 320,130 C 360,130 370,130 400,130" id="e3"/>
+            <path class="edge edge-slow" d="M 320,130 C 360,130 370,190 400,190" id="e4"/>
+            <path class="edge" d="M 500,190 L 530,220" id="e5"/>
+          </g>
+          <!-- Particles will be appended into this group by JS -->
+          <g id="topology-particles"></g>
+          <!-- Nodes -->
+          <g class="topology-nodes">
+            <g class="node" transform="translate(40, 110)">
+              <rect width="80" height="40" rx="6"/>
+              <text x="40" y="25" text-anchor="middle">Gateway</text>
+            </g>
+            <g class="node" transform="translate(220, 110)">
+              <rect width="100" height="40" rx="6"/>
+              <text x="50" y="25" text-anchor="middle">Agent</text>
+            </g>
+            <g class="node" transform="translate(400, 50)">
+              <rect width="100" height="40" rx="6"/>
+              <text x="50" y="25" text-anchor="middle">Retrieval</text>
+            </g>
+            <g class="node" transform="translate(400, 110)">
+              <rect width="100" height="40" rx="6"/>
+              <text x="50" y="25" text-anchor="middle">Model</text>
+            </g>
+            <g class="node node-degraded" transform="translate(400, 170)">
+              <rect width="100" height="40" rx="6"/>
+              <text x="50" y="25" text-anchor="middle">Tools</text>
+            </g>
+            <g class="node" transform="translate(520, 200)">
+              <rect width="40" height="40" rx="6"/>
+              <text x="20" y="25" text-anchor="middle">DB</text>
+            </g>
+          </g>
+        </svg>
+        <div class="topology-legend">
+          <div class="topology-legend-item"><span class="sw" style="background: var(--blue);"></span>Request in flight</div>
+          <div class="topology-legend-item"><span class="sw" style="background: var(--coral);"></span>Degraded path</div>
+          <div class="topology-legend-item"><span class="sw" style="background: var(--bg); border: 1px solid var(--line);"></span>Healthy node</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="demo-head">
+        <div class="demo-title">Training run, live</div>
+        <span class="tag" data-state="neutral" id="tag-11">Paused</span>
+      </div>
+      <div class="curve-wrap">
+        <div class="curve-meta">
+          <div class="curve-stats">
+            <div class="curve-stat-block">
+              <div class="curve-stat-label">Step</div>
+              <div class="curve-stat-value" id="curve-step">0</div>
+            </div>
+            <div class="curve-stat-block">
+              <div class="curve-stat-label">Train loss</div>
+              <div class="curve-stat-value" id="curve-train">—</div>
+            </div>
+            <div class="curve-stat-block">
+              <div class="curve-stat-label">Val loss</div>
+              <div class="curve-stat-value" id="curve-val">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="curve-canvas">
+          <svg viewBox="0 0 400 180" preserveAspectRatio="none">
+            <line class="curve-grid" x1="0" y1="45"  x2="400" y2="45"/>
+            <line class="curve-grid" x1="0" y1="90"  x2="400" y2="90"/>
+            <line class="curve-grid" x1="0" y1="135" x2="400" y2="135"/>
+            <path class="curve-line-val"   id="curve-path-val"   d=""/>
+            <path class="curve-line-train" id="curve-path-train" d=""/>
+          </svg>
+        </div>
+        <div class="curve-legend">
+          <div class="curve-legend-item"><span class="sw" style="background: var(--blue);"></span>Train</div>
+          <div class="curve-legend-item"><span class="sw" style="background: var(--coral);"></span>Validation</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-11-run" onclick="runCurve()">Start training</button>
+        <button class="btn btn-secondary" onclick="resetCurve()">Reset</button>
+      </div>
+    </div>
+
+  <p>The shared function is to make ongoing computation legible without reducing it to a single state.</p>
+
+  <p>AI interfaces are converging on this model because they face the same constraint. They are interfaces to systems whose behavior cannot be summarized at a glance.</p>
+
+  <p>In this sense, AI interfaces are becoming consumer-facing observability tools.</p>
+
+  <h3>The observability anti-pattern</h3>
+
+  <p>Aggregate numbers without motion.</p>
+
+  <p>A single value — average latency, success rate — collapses temporal variation into a static summary. It obscures spikes, regressions, and failure modes.</p>
+
+  <p>Without motion, there is no context. Without context, system behavior cannot be interpreted.</p>
+
+  <p>If an interface would appear unchanged over time, it is not observing. It is reporting.</p>
+
+  <h2>Misrepresentations of uncertainty</h2>
+
+  <p>Two failure modes recur across these patterns.</p>
+
+  <h3>Confidence performance</h3>
+
+  <p>Interfaces that present probabilistic outputs with deterministic affordances — definitive typography, success states — miscalibrate user trust.</p>
+
+  <p>The system&rsquo;s uncertainty is replaced by the interface&rsquo;s certainty.</p>
+
+  <h3>Premature resolution</h3>
+
+  <p>Interfaces that signal completion for processes that remain revisable discourage verification.</p>
+
+  <p>A filled progress bar or a final-looking answer suggests that work is finished when it is not.</p>
+
+  <h2>Conclusion</h2>
+
+  <p>The evolution of motion in AI interfaces reflects a mismatch between interface conventions and system properties.</p>
+
+  <p>Traditional patterns — spinners, progress indicators, completion states — assume systems that are fast, predictable, and opaque. They reduce work to a binary state.</p>
+
+  <p>AI systems do not conform to these assumptions. Their behavior is variable, their execution is multi-stage, and their outputs are often provisional.</p>
+
+  <p>This shift aligns AI interfaces more closely with observability systems than with traditional application design. In both cases, the objective is to make processes interpretable over time.</p>
+
+  <div class="kicker">The shift is not that interfaces now look different. It is that interfaces now have to carry information they previously hid. Motion is the channel through which that information travels.</div>
+
+</article>
+
+<script>
+// ---------- helpers
+function setTag(id, state, label) {
+  const t = document.getElementById(id);
+  if (!t) return;
+  t.dataset.state = state;
+  t.textContent = label;
+}
+
+// ---------- title specimen: cycles through motion patterns
+(function(){
+  const stage = document.getElementById('ts-stage');
+  if (!stage) return;
+
+  const frames = [
+    // Spinner — the "before"
+    () => { stage.innerHTML = '<div class="ts-spinner"></div>'; },
+    // Typing dots
+    () => { stage.innerHTML = '<div class="ts-dots"><span></span><span></span><span></span></div>'; },
+    // Progress bar filling (staged)
+    () => { stage.innerHTML = '<div class="ts-bar"><div class="ts-bar-fill"></div></div>'; },
+    // Pulse — ambient
+    () => { stage.innerHTML = '<div class="ts-pulse"></div>'; }
+  ];
+
+  let idx = 0;
+  function tick() {
+    frames[idx]();
+    idx = (idx + 1) % frames.length;
+    setTimeout(tick, 2600);
+  }
+  tick();
+})();
+
+// ---------- hero spinner live timer
+(function(){
+  const el = document.getElementById('spinner-timer');
+  if (!el) return;
+  const start = Date.now();
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return s + 's';
+    const m = Math.floor(s / 60);
+    return m + 'm ' + (s % 60) + 's';
+  }
+  setInterval(() => { el.textContent = fmt(Date.now() - start); }, 1000);
+})();
+
+// ---------- typing indicator
+function runTyping() {
+  const chat = document.getElementById('chat-02');
+  const annotate = document.getElementById('annotate-02');
+  annotate.classList.remove('show');
+  setTag('tag-02', 'live', 'Typing…');
+  chat.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  setTimeout(() => {
+    chat.innerHTML = 'The capital of Bolivia is Sucre (constitutional) and La Paz (seat of government).';
+    setTag('tag-02', 'done', 'Done');
+    setTimeout(() => annotate.classList.add('show'), 400);
+  }, 2200);
+}
+
+// ---------- streaming
+const streamTokens = [
+  ['Streaming ',60],['helps ',50],['because ',55],['it ',40],
+  ['lets ',50],['you ',40],['see ',45],['the ',40],
+  ['model ',50],['compose ',180],['its ',50],['answer ',55],
+  ['in ',40],['real ',45],['time.\n\n',80],
+  ['You ',55],['get ',40],['proof ',60],['of ',40],
+  ['life, ',55],['pacing ',120],['cues ',80],['about ',45],
+  ['difficulty, ',150],['and ',40],['the ',40],['ability ',70],
+  ['to ',40],['interrupt ',160],['before ',55],['a ',40],
+  ['bad ',50],['answer ',55],['finishes.',90]
+];
+
+let streamingRun = null;
+
+function runStreaming() {
+  const chat = document.getElementById('chat-03');
+  const btnStart = document.getElementById('btn-03-start');
+  const btnStop = document.getElementById('btn-03-stop');
+  chat.innerHTML = '';
+  setTag('tag-03', 'live', 'Streaming');
+  btnStart.disabled = true; btnStop.disabled = false;
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  chat.appendChild(cursor);
+  function next() {
+    if (i >= streamTokens.length) {
+      cursor.remove();
+      setTag('tag-03', 'done', 'Done');
+      btnStart.disabled = false; btnStop.disabled = true;
+      streamingRun = null; return;
+    }
+    const [text, delay] = streamTokens[i];
+    chat.insertBefore(document.createTextNode(text), cursor);
+    i++;
+    streamingRun = setTimeout(next, delay);
+  }
+  next();
+}
+
+function stopStreaming() {
+  if (streamingRun) { clearTimeout(streamingRun); streamingRun = null; }
+  const cursor = document.querySelector('#chat-03 .cursor');
+  if (cursor) cursor.remove();
+  setTag('tag-03', 'neutral', 'Stopped');
+  document.getElementById('btn-03-start').disabled = false;
+  document.getElementById('btn-03-stop').disabled = true;
+}
+
+// ---------- multi-shot render
+let shotsRunning = false;
+function runShots() {
+  if (shotsRunning) return;
+  shotsRunning = true;
+  const shots = document.querySelectorAll('#shots-04 .shot');
+  const btn = document.getElementById('btn-04-run');
+  btn.disabled = true;
+  setTag('tag-04', 'live', 'Rendering');
+
+  let i = 0;
+  function renderShot() {
+    if (i >= shots.length) {
+      setTag('tag-04', 'done', 'Complete');
+      shotsRunning = false;
+      btn.disabled = false;
+      return;
+    }
+    const shot = shots[i];
+    shot.classList.add('running');
+    const bar = shot.querySelector('.shot-progress-bar');
+    const duration = 1400 + Math.random() * 800;
+    const start = performance.now();
+    function tick() {
+      const elapsed = performance.now() - start;
+      const p = Math.min(elapsed / duration, 1);
+      bar.style.width = (p * 100) + '%';
+      if (p < 1) requestAnimationFrame(tick);
+      else {
+        shot.classList.remove('running');
+        shot.classList.add('done');
+        i++;
+        setTimeout(renderShot, 250);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  renderShot();
+}
+
+function resetShots() {
+  if (shotsRunning) return;
+  document.querySelectorAll('#shots-04 .shot').forEach(s => {
+    s.classList.remove('running', 'done');
+    s.querySelector('.shot-progress-bar').style.width = '0';
+  });
+  setTag('tag-04', 'neutral', 'Queued');
+}
+
+// ---------- reasoning
+const reasoningFull = 'Kettles are typically 1500W and heat directly via an element in the water. Microwaves are ~1000W but less efficient at heating water. Kettle efficiency ≈ 80%, microwave ≈ 50% for water. For 1 cup: kettle ~70s × 1500W = ~29 Wh. Microwave ~120s × 1000W = ~33 Wh. Kettle wins on energy.';
+
+const answerTokens = [
+  ['The ',50],['kettle ',60],['is ',45],['slightly ',80],['cheaper ',100],
+  ['because ',60],['it ',40],['transfers ',90],['energy ',55],['more ',50],
+  ['directly ',80],['into ',45],['the ',40],['water. ',70],
+  ['The ',45],['difference ',80],['per ',40],['cup ',45],['is ',40],
+  ['under ',60],['a ',40],['cent, ',80],['though.',90]
+];
+
+function runReasoning() {
+  const box = document.getElementById('reasoning-05');
+  const body = document.getElementById('reasoning-body-05');
+  const label = document.getElementById('reasoning-label-05');
+  const answer = document.getElementById('answer-05');
+  box.style.display = 'block';
+  box.classList.add('open');
+  body.textContent = ''; answer.innerHTML = '';
+  label.textContent = 'Thinking…';
+  setTag('tag-05', 'live', 'Reasoning');
+
+  let charIdx = 0;
+  function reasonStep() {
+    if (charIdx >= reasoningFull.length) {
+      label.textContent = 'Thought for 2s · click to expand';
+      box.classList.remove('open');
+      setTag('tag-05', 'live', 'Answering');
+      setTimeout(streamAnswer, 400);
+      return;
+    }
+    const chunk = Math.min(4, reasoningFull.length - charIdx);
+    body.textContent = reasoningFull.slice(0, charIdx + chunk);
+    charIdx += chunk;
+    setTimeout(reasonStep, 20);
+  }
+  reasonStep();
+
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  function streamAnswer() {
+    answer.innerHTML = '';
+    answer.appendChild(cursor);
+    function next() {
+      if (i >= answerTokens.length) {
+        cursor.remove();
+        setTag('tag-05', 'done', 'Done');
+        return;
+      }
+      const [text, delay] = answerTokens[i];
+      answer.insertBefore(document.createTextNode(text), cursor);
+      i++; setTimeout(next, delay);
+    }
+    next();
+  }
+}
+
+function toggleReasoning() {
+  document.getElementById('reasoning-05').classList.toggle('open');
+}
+
+// ---------- plan
+let planRunning = false;
+function approvePlan() {
+  if (planRunning) return;
+  planRunning = true;
+  const steps = document.querySelectorAll('#plan-06 .plan-step');
+  const btn = document.getElementById('btn-06-approve');
+  btn.disabled = true;
+  setTag('tag-06', 'live', 'Executing');
+  let i = 0;
+  function step() {
+    if (i >= steps.length) {
+      setTag('tag-06', 'done', 'Complete');
+      planRunning = false; return;
+    }
+    const s = steps[i];
+    s.classList.add('running');
+    s.querySelector('.step-status').textContent = 'running';
+    setTimeout(() => {
+      s.classList.remove('running');
+      s.classList.add('done');
+      s.querySelector('.step-status').textContent = 'done';
+      i++;
+      setTimeout(step, 350);
+    }, 1000 + Math.random() * 500);
+  }
+  step();
+}
+
+function resetPlan() {
+  if (planRunning) return;
+  document.querySelectorAll('#plan-06 .plan-step').forEach(s => {
+    s.classList.remove('running', 'done');
+    s.querySelector('.step-status').textContent = 'pending';
+  });
+  setTag('tag-06', 'neutral', 'Awaiting approval');
+  document.getElementById('btn-06-approve').disabled = false;
+}
+
+// ---------- tool-call trace
+const traceEvents = [
+  { type: 'call', time: '0.02s', fn: 'search_web', args: '"highly-rated Thai Queens NY"' },
+  { type: 'result', result: '14 results · eater.com, nytimes.com, yelp.com', delay: 800 },
+  { type: 'call', time: '0.84s', fn: 'fetch_url', args: '"eater.com/maps/best-thai-nyc"' },
+  { type: 'result', result: 'parsed 2,148 tokens from article', delay: 600 },
+  { type: 'call', time: '1.45s', fn: 'fetch_reviews', args: '"Sripraphai, Woodside"' },
+  { type: 'result', result: '347 reviews · avg 4.6 · trend stable', delay: 900 },
+  { type: 'call', time: '2.38s', fn: 'fetch_reviews', args: '"Ayada Thai, Elmhurst"' },
+  { type: 'result', result: '512 reviews · avg 4.5 · trend improving', delay: 750 },
+  { type: 'call', time: '3.12s', fn: 'rank_by', args: 'criteria=["rating","trend","distance"]' },
+  { type: 'result', result: 'top: Ayada Thai, Sripraphai, Pata Paplean', delay: 500 },
+  { type: 'final', text: 'Writing recommendation…' }
+];
+
+let traceRunning = false;
+
+function runTrace() {
+  if (traceRunning) return;
+  traceRunning = true;
+  const trace = document.getElementById('trace-07');
+  const btn = document.getElementById('btn-07-run');
+  btn.disabled = true;
+  trace.innerHTML = '';
+  setTag('tag-07', 'live', 'Running tools');
+
+  let i = 0;
+  function next() {
+    if (i >= traceEvents.length) {
+      setTag('tag-07', 'done', 'Done');
+      btn.disabled = false;
+      traceRunning = false;
+      return;
+    }
+    const ev = traceEvents[i];
+    let line;
+    if (ev.type === 'call') {
+      line = document.createElement('div');
+      line.className = 'trace-line';
+      line.innerHTML = '<span class="trace-time">' + ev.time + '</span><span class="trace-arrow">→</span><span class="trace-call"><span class="tc-fn">' + ev.fn + '</span>(<span class="tc-str">' + ev.args + '</span>)</span>';
+      trace.appendChild(line);
+      i++; setTimeout(next, 200);
+    } else if (ev.type === 'result') {
+      line = document.createElement('div');
+      line.className = 'trace-line trace-result';
+      line.innerHTML = '<span class="trace-result-arrow">✓</span><span style="color: var(--ink-2);">' + ev.result + '</span>';
+      trace.appendChild(line);
+      i++; setTimeout(next, ev.delay || 600);
+    } else if (ev.type === 'final') {
+      line = document.createElement('div');
+      line.className = 'trace-line trace-final';
+      line.textContent = ev.text;
+      trace.appendChild(line);
+      i++; setTimeout(next, 800);
+    }
+  }
+  next();
+}
+
+// inline styles for trace (kept with the script since it only applies here)
+(function(){
+  const css = `
+    .trace { background: var(--surface-1); border-radius: var(--r-md); padding: 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; min-height: 150px; }
+    .trace-line { display: flex; gap: 10px; align-items: baseline; padding: 2px 0; opacity: 0; animation: trace-enter 0.3s ease-out forwards; }
+    @keyframes trace-enter { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    .trace-time { color: var(--ink-3); font-size: 10px; width: 50px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .trace-arrow { color: var(--blue); font-weight: 700; flex-shrink: 0; }
+    .trace-result-arrow { color: var(--green); font-weight: 700; flex-shrink: 0; margin-left: 4px; }
+    .trace-call .tc-fn { color: var(--blue); font-weight: 600; }
+    .trace-call .tc-str { color: var(--coral); }
+    .trace-result { color: var(--ink-2); padding-left: 60px; font-size: 11px; }
+    .trace-final { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); color: var(--blue); font-weight: 600; padding-left: 60px; }
+  `;
+  const s = document.createElement('style');
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
+
+// ---------- RECEIPT (NEW)
+function runReceipt() {
+  const statCalls  = document.getElementById('stat-calls');
+  const statTokens = document.getElementById('stat-tokens');
+  const statFiles  = document.getElementById('stat-files');
+  const statCost   = document.getElementById('stat-cost');
+  const timeEl     = document.getElementById('receipt-time');
+  const btn        = document.getElementById('btn-08-run');
+
+  btn.disabled = true;
+  setTag('tag-08', 'live', 'Running');
+
+  // simulate a time passing briefly
+  let secs = 0;
+  const timeInterval = setInterval(() => {
+    secs++;
+    timeEl.textContent = secs + 's';
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(timeInterval);
+    timeEl.textContent = '47s';
+    setTag('tag-08', 'done', 'Complete');
+
+    // animate numbers up
+    animateNumber(statCalls,  0, 23,   1200, false);
+    animateNumber(statTokens, 0, 4821, 1400, false);
+    animateNumber(statFiles,  0, 3,    900,  false);
+    animateNumber(statCost,   0, 0.08, 1300, true);
+
+    btn.disabled = false;
+  }, 600);
+}
+
+function animateNumber(el, from, to, duration, isCurrency) {
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    const p = Math.min(elapsed / duration, 1);
+    // ease-out cubic
+    const eased = 1 - Math.pow(1 - p, 3);
+    const current = from + (to - from) * eased;
+    if (isCurrency) {
+      el.textContent = '$' + current.toFixed(2);
+    } else {
+      el.textContent = Math.round(current).toLocaleString();
+    }
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ---------- LIVE TIME-SERIES CHART (NEW)
+(function(){
+  const line = document.getElementById('chart-line');
+  const fill = document.getElementById('chart-fill');
+  const dot  = document.getElementById('chart-dot');
+  const valueEl = document.getElementById('chart-value');
+  const deltaEl = document.getElementById('chart-delta');
+  if (!line) return;
+
+  const W = 400, H = 140;
+  const maxPoints = 60;
+  const data = [];
+
+  // seed with a plausible baseline
+  let last = 1200;
+  for (let i = 0; i < maxPoints; i++) {
+    last += (Math.random() - 0.5) * 80;
+    last = Math.max(400, Math.min(1800, last));
+    data.push(last);
+  }
+
+  function render() {
+    const min = 300, max = 2000;
+    const points = data.map((v, i) => {
+      const x = (i / (maxPoints - 1)) * W;
+      const y = H - ((v - min) / (max - min)) * H;
+      return [x, y];
+    });
+    const d = points.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    line.setAttribute('d', d);
+    fill.setAttribute('d', d + ` L ${W},${H} L 0,${H} Z`);
+    const last = points[points.length - 1];
+    dot.setAttribute('cx', last[0]);
+    dot.setAttribute('cy', last[1]);
+
+    // update value + delta
+    const current = data[data.length - 1];
+    const baseline = data[0];
+    valueEl.textContent = Math.round(current).toLocaleString();
+    const deltaPct = ((current - baseline) / baseline) * 100;
+    if (Math.abs(deltaPct) < 3) {
+      deltaEl.dataset.dir = 'flat';
+      deltaEl.textContent = '≈ vs 5m ago';
+    } else if (deltaPct > 0) {
+      deltaEl.dataset.dir = 'up';
+      deltaEl.textContent = '↑ ' + deltaPct.toFixed(1) + '% vs 5m ago';
+    } else {
+      deltaEl.dataset.dir = 'down';
+      deltaEl.textContent = '↓ ' + Math.abs(deltaPct).toFixed(1) + '% vs 5m ago';
+    }
+  }
+
+  function tick() {
+    last += (Math.random() - 0.48) * 100;
+    last = Math.max(400, Math.min(1800, last));
+    data.push(last);
+    if (data.length > maxPoints) data.shift();
+    render();
+  }
+
+  render();
+  setInterval(tick, 600);
+})();
+
+// ---------- FLAME GRAPH (NEW)
+function runFlame() {
+  const spans = document.querySelectorAll('#flame-rows-10 .flame-span');
+  const btn = document.getElementById('btn-10-run');
+  btn.disabled = true;
+  setTag('tag-10', 'live', 'Replaying');
+
+  // clear revealed state
+  spans.forEach(s => s.classList.remove('revealed'));
+
+  // reveal in hierarchical order
+  let i = 0;
+  function reveal() {
+    if (i >= spans.length) {
+      setTag('tag-10', 'done', 'Complete');
+      btn.disabled = false;
+      return;
+    }
+    spans[i].classList.add('revealed');
+    i++;
+    setTimeout(reveal, 180);
+  }
+  reveal();
+}
+
+// initial reveal on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('#flame-rows-10 .flame-span').forEach(s => s.classList.add('revealed'));
+  }, 500);
+});
+
+// ---------- TRAINING CURVE (NEW)
+(function(){
+  const pathTrain = document.getElementById('curve-path-train');
+  const pathVal   = document.getElementById('curve-path-val');
+  const stepEl    = document.getElementById('curve-step');
+  const trainEl   = document.getElementById('curve-train');
+  const valEl     = document.getElementById('curve-val');
+  if (!pathTrain) return;
+
+  const W = 400, H = 180;
+  const totalSteps = 100;
+  let step = 0;
+  let running = false;
+  let timer = null;
+
+  const trainData = [];
+  const valData = [];
+
+  function lossAtStep(s, noise, offset) {
+    // exponential decay + noise
+    return 3 * Math.exp(-s / 35) + 0.25 + offset + (Math.random() - 0.5) * noise;
+  }
+
+  function render() {
+    if (trainData.length === 0) {
+      pathTrain.setAttribute('d', '');
+      pathVal.setAttribute('d', '');
+      return;
+    }
+    const minLoss = 0.2, maxLoss = 3.5;
+    const toPoints = (arr) => arr.map((v, i) => {
+      const x = (i / Math.max(totalSteps - 1, 1)) * W;
+      const y = H - ((v - minLoss) / (maxLoss - minLoss)) * H;
+      return [x, y];
+    });
+    const p1 = toPoints(trainData);
+    const p2 = toPoints(valData);
+    pathTrain.setAttribute('d', p1.map((p,i) => (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '));
+    pathVal.setAttribute('d',   p2.map((p,i) => (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '));
+  }
+
+  window.runCurve = function() {
+    if (running) return;
+    running = true;
+    setTag('tag-11', 'live', 'Training');
+    document.getElementById('btn-11-run').disabled = true;
+
+    timer = setInterval(() => {
+      if (step >= totalSteps) {
+        running = false;
+        clearInterval(timer);
+        setTag('tag-11', 'done', 'Complete');
+        document.getElementById('btn-11-run').disabled = false;
+        return;
+      }
+      const t = lossAtStep(step, 0.15, 0);
+      const v = lossAtStep(step, 0.25, 0.15);
+      trainData.push(t);
+      valData.push(v);
+      step++;
+      stepEl.textContent = step;
+      trainEl.textContent = t.toFixed(3);
+      valEl.textContent   = v.toFixed(3);
+      render();
+    }, 80);
+  };
+
+  window.resetCurve = function() {
+    if (running) { clearInterval(timer); running = false; }
+    step = 0;
+    trainData.length = 0;
+    valData.length = 0;
+    stepEl.textContent = '0';
+    trainEl.textContent = '—';
+    valEl.textContent = '—';
+    render();
+    setTag('tag-11', 'neutral', 'Paused');
+    document.getElementById('btn-11-run').disabled = false;
+  };
+
+  render();
+})();
+
+// ---------- AUTONOMY SPECTRUM (dropped in exact-text version; JS kept harmless)
+(function(){
+  const planEl = document.getElementById('weight-plan');
+  if (!planEl) return; // spectrum element not present in this version
+  const data = {
+    claude: {
+      plan: 90, trace: 45, receipt: 35,
+      desc: "Claude Code prompts you before each tool call. Most of the motion is in the plan view — every action passes through you. Traces and receipts exist but carry less weight when you're already in the loop for every step."
+    },
+    cursor: {
+      plan: 55, trace: 90, receipt: 55,
+      desc: "Cursor Composer edits files with per-file approval. The live trace — diffs streaming across files as they're generated — is the primary interface. Plans are lighter; the trace carries most of the weight."
+    },
+    devin: {
+      plan: 25, trace: 50, receipt: 95,
+      desc: "Devin runs end-to-end for minutes without input. You're rarely watching, so the receipt — what changed, what ran, what cost — is the main connection to the work. A poor receipt here is a broken product."
+    }
+  };
+
+  const buttons = document.querySelectorAll('#autonomy-spectrum .spectrum-point');
+  const traceEl = document.getElementById('weight-trace');
+  const receiptEl = document.getElementById('weight-receipt');
+  const descEl = document.getElementById('spectrum-description');
+
+  function apply(tool) {
+    const d = data[tool];
+    planEl.style.width = d.plan + '%';
+    traceEl.style.width = d.trace + '%';
+    receiptEl.style.width = d.receipt + '%';
+    descEl.textContent = d.desc;
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      apply(btn.dataset.tool);
+    });
+  });
+
+  apply('claude');
+})();
+
+// ---------- LOG STREAM
+(function(){
+  const stream = document.getElementById('log-stream');
+  if (!stream) return;
+
+  const templates = [
+    { level: 'INFO',  svc: 'agent-worker',  msgs: ['request received', 'tool_call complete', 'response streamed', 'cache hit on key d8f2', 'thread spawned'] },
+    { level: 'INFO',  svc: 'model-proxy',   msgs: ['upstream 200 OK', 'tokens used: 1847', 'latency p50=420ms', 'connection pooled'] },
+    { level: 'INFO',  svc: 'retrieval',     msgs: ['vector search OK', '14 hits returned', 'rerank applied', 'index warm'] },
+    { level: 'INFO',  svc: 'gateway',       msgs: ['auth ok', 'rate limit check passed', 'req queued'] },
+    { level: 'WARN',  svc: 'model-proxy',   msgs: ['p99 latency rising: 2.8s', 'approaching token budget', 'retry after 429'] },
+    { level: 'WARN',  svc: 'agent-worker',  msgs: ['tool slow: web_fetch > 3s', 'retrying with backoff'] },
+    { level: 'ERROR', svc: 'agent-worker',  msgs: ['tool timeout: web_fetch', 'max retries exceeded', 'invalid tool output schema'] },
+    { level: 'ERROR', svc: 'model-proxy',   msgs: ['upstream 503', 'context window exceeded'] }
+  ];
+
+  function fmt(d) {
+    return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+  }
+
+  function pick() {
+    const r = Math.random();
+    if (r < 0.75) return templates[Math.floor(Math.random() * 4)];   // INFO heavy
+    if (r < 0.92) return templates[4 + Math.floor(Math.random() * 2)]; // WARN
+    return templates[6 + Math.floor(Math.random() * 2)];              // ERROR
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function addLine() {
+    const t = pick();
+    const msg = t.msgs[Math.floor(Math.random() * t.msgs.length)];
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = '<span class="log-time">' + fmt(new Date()) + '</span>' +
+                     '<span class="log-level" data-level="' + t.level + '">' + t.level + '</span>' +
+                     '<span class="log-service">' + escapeHtml(t.svc) + '</span>' +
+                     '<span class="log-msg">' + escapeHtml(msg) + '</span>';
+    stream.appendChild(line);
+    while (stream.children.length > 14) stream.removeChild(stream.firstChild);
+  }
+
+  // seed with a handful so the stream doesn't start empty
+  for (let i = 0; i < 8; i++) addLine();
+
+  function schedule() {
+    const delay = 500 + Math.random() * 900;
+    setTimeout(() => { addLine(); schedule(); }, delay);
+  }
+  schedule();
+})();
+
+// ---------- TOPOLOGY (traffic particles along edges)
+(function(){
+  const svg = document.querySelector('.topology svg');
+  if (!svg) return;
+  const particleLayer = document.getElementById('topology-particles');
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  // each edge config: { id, slow, rate (ms between particles) }
+  const edges = [
+    { id: 'e1', slow: false, rate: 450 },
+    { id: 'e2', slow: false, rate: 700 },
+    { id: 'e3', slow: false, rate: 400 },
+    { id: 'e4', slow: true,  rate: 350 },  // heavy traffic to the slow node
+    { id: 'e5', slow: true,  rate: 600 }
+  ];
+
+  function launchParticle(edgeCfg) {
+    const path = document.getElementById(edgeCfg.id);
+    if (!path) return;
+    const length = path.getTotalLength();
+    const c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('r', '3');
+    c.setAttribute('class', edgeCfg.slow ? 'particle particle-slow' : 'particle');
+    particleLayer.appendChild(c);
+
+    const duration = edgeCfg.slow ? 1400 : 800;
+    const start = performance.now();
+
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const pt = path.getPointAtLength(p * length);
+      c.setAttribute('cx', pt.x);
+      c.setAttribute('cy', pt.y);
+      if (p < 1) requestAnimationFrame(tick);
+      else c.remove();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  edges.forEach(e => {
+    // stagger initial launches
+    setTimeout(() => {
+      launchParticle(e);
+      setInterval(() => launchParticle(e), e.rate);
+    }, Math.random() * e.rate);
+  });
+})();
+</script>
+
+</body>
+</html>
