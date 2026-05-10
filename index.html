@@ -114,9 +114,10 @@ a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; 
 a:hover { text-decoration-thickness: 2px; }
 
 .byline {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--ink-3);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
   padding-bottom: 32px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 32px;
@@ -1439,6 +1440,8 @@ a:hover { text-decoration-thickness: 2px; }
 
   <p class="lede">As software moves from deterministic execution to probabilistic processes, motion becomes the primary mechanism for making work visible.</p>
 
+  <p class="byline">Tanha Alsheikhdallah · May 2026</p>
+
   <h2>Introduction</h2>
 
   <p>Most interface patterns assume a particular kind of system.</p>
@@ -1480,7 +1483,7 @@ a:hover { text-decoration-thickness: 2px; }
 
   <p>As latency increases, the limitation becomes structural. The spinner does not distinguish between active computation, retry loops, or failure states. It continues to signal progress even when none is occurring.</p>
 
-  <p>The issue is not visual design. The issue is the model of work it represents: fast, linear, and opaque.</p>
+  <p>The issue is not visual design. The issue is the model of work it represents: fast, finite, and opaque.</p>
 
   <h2>The typing indicator</h2>
 
@@ -1825,7 +1828,7 @@ a:hover { text-decoration-thickness: 2px; }
 
   <h2>Observability</h2>
 
-  <p>These patterns are not new. They originate in observability systems.</p>
+  <p>These patterns are not new. They echo observability systems.</p>
 
   <p>Observability tools were designed to make distributed, unreliable processes understandable in real time. They rely on a set of primitives:</p>
 
@@ -1839,7 +1842,7 @@ a:hover { text-decoration-thickness: 2px; }
 
   <p>Each represents system behavior over time.</p>
 
-  <p>Live metrics make trends visible. Log streams expose event sequences. Traces reveal structured execution paths. Topology maps show relationships between components.</p>
+  <p>Live metrics make trends visible. Log streams expose event sequences. Traces reveal structured execution paths. Topology maps show relationships between components. Experiments compare runs across configurations.</p>
 
     <div class="demo">
       <div class="demo-head">
